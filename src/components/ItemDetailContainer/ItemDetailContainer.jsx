@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getProductById } from '../../asyncMock'
+
 import style from './ItemDetailContainer.module.css'
 import ItemDetail from '../ItemDetail/ItemDetail'
+import {db} from '../../services/firebase/firebaseConfig'
+import { getDoc, doc } from 'firebase/firestore'
 
 const ItemDetailContainer = ({ greeting }) => {
     const [loading, setLoading] = useState(true)
@@ -10,18 +12,41 @@ const ItemDetailContainer = ({ greeting }) => {
 
     const { itemId } = useParams()
 
+    useEffect(()=>{
+        if (product) document.title = product.name
+            return () =>{
+                document.title = 'Ecommerce'
+            }
+    })
+
     useEffect(() => {
         setLoading(true)
-        getProductById(itemId)
-            .then(response => {
-                setProduct(response)
+
+        const productDocument = doc(db, 'products', itemId)
+
+        getDoc(productDocument)
+            .then(queryDocumentSnapshot =>{
+                const fields = doc.data()
+                const productAdapter = {id: queryDocumentSnapshot.id, ...fields}
+                setProduct(productAdapter)
+           
             })
-            .catch(error => {
-                console.error(error)
+            .catch(error =>{
+                console.log(error)
             })
-            .finally(() => {
+            .finally(()=>{
                 setLoading(false)
             })
+        // getProductById(itemId)
+        //     .then(response => {
+        //         setProduct(response)
+        //     })
+        //     .catch(error => {
+        //         console.error(error)
+        //     })
+        //     .finally(() => {
+        //         setLoading(false)
+        //     })
     }, [itemId])
 
     if (loading) {

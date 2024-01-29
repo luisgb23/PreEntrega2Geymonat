@@ -1,28 +1,50 @@
 import { useState, useEffect } from 'react'
-import { getProducts, getProductsByCategory } from '../../asyncMock'
 import ItemList from '../ItemList/ItemList'
 import { useParams } from 'react-router-dom'
+import {db} from '../../services/firebase/firebaseConfig'
+import { getDocs, collection } from 'firebase/firestore' 
 
 const ItemListContainer = ({ greeting }) => {
     const [loading, setLoading] = useState(true)
     const [products, setProducts] = useState([])
 
     const { categoryId } = useParams()
-
+    useEffect(()=>{
+        if (categoryId) document.title = 'Ecommerce: ' + categoryId 
+            return () =>{
+                document.title = 'Ecommerce'
+            }
+    })
     useEffect(() => {
         setLoading(true)
-        const asyncFunc = categoryId ? getProductsByCategory : getProducts
 
-        asyncFunc(categoryId)
-            .then(response => {
-                setProducts(response)
+        const productsCollection = collection(db,'products')
+        getDocs(productsCollection)
+            .then(querySnapshot =>{
+               const productsAdapter = querySnapshot.docs.map(doc =>{
+                    const fields = doc.data()
+                    return{id: doc.id, ...fields}
+               })
+               setProducts(productsAdapter)
             })
-            .catch(error => {
-                console.error(error)
+            .catch(error =>{
+                console.log(error)
             })
-            .finally(() => {
+            .finally(()=>{
                 setLoading(false)
             })
+        // const asyncFunc = categoryId ? getProductsByCategory : getProducts
+
+        // asyncFunc(categoryId)
+        //     .then(response => {
+        //         setProducts(response)
+        //     })
+        //     .catch(error => {
+        //         console.error(error)
+        //     })
+        //     .finally(() => {
+        //         setLoading(false)
+        //     })
     }, [categoryId])
 
     if (loading) {
