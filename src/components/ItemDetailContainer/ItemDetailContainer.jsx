@@ -26,7 +26,7 @@ const ItemDetailContainer = ({ greeting }) => {
 
         getDoc(productDocument)
             .then(queryDocumentSnapshot =>{
-                const fields = doc.data()
+                const fields = queryDocumentSnapshot.data()
                 const productAdapter = {id: queryDocumentSnapshot.id, ...fields}
                 setProduct(productAdapter)
            
@@ -37,16 +37,7 @@ const ItemDetailContainer = ({ greeting }) => {
             .finally(()=>{
                 setLoading(false)
             })
-        // getProductById(itemId)
-        //     .then(response => {
-        //         setProduct(response)
-        //     })
-        //     .catch(error => {
-        //         console.error(error)
-        //     })
-        //     .finally(() => {
-        //         setLoading(false)
-        //     })
+   
     }, [itemId])
 
     if (loading) {
